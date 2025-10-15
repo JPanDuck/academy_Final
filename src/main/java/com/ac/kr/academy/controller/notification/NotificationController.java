@@ -24,13 +24,4 @@ public class NotificationController {
         return "notification/notificationList";
         // => /WEB-INF/views/notification/notificationList.jsp
     }
-
-    // 2) 로그인한 사용자 자신의 알림 목록
-    @GetMapping("/notificationList")
-    public String myNotificationList(Model model, @AuthenticationPrincipal CustomUserDetails user) {
-        List<Notification> notifications = notificationService.getNotificationList(user.getUserId());
-        model.addAttribute("notifications", notifications);
-        return "notification/notificationList";
-        // => /WEB-INF/views/notification/notificationList.jsp
-    }
 }

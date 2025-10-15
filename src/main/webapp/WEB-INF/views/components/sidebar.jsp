@@ -19,6 +19,7 @@
     <li><a href="<c:url value='/auth/log-history'/>">접속 기록 관리</a></li>
     <li><a href="<c:url value='/auth/log-monitor'/>">로그 모니터링</a></li>
     <li><a href="<c:url value='/auth/user-list'/>">계정</a></li>
+    <li><a href="<c:url value='/auth/advisor-role'/>">지도교수 지정</a></li>
 </sec:authorize>
 
     <!-- ✅ 교수 메뉴 -->
