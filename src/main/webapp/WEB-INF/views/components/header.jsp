@@ -37,21 +37,32 @@
             <sec:authorize access="hasRole('ROLE_ADMIN')">
                 <a href="<c:url value='/admin/mypage'/>"
                    class="btn btn-white rounded-pill h-40 px-2 d-flex align-items-center gap-2 text-decoration-none">
-                    <div class="avatar">U</div>
+                    <div class="avatar">M</div>
                     <div class="text-start lh-1">
-                        <div class="text-navy fw-600 small"><sec:authentication property="principal.username"/></div>
+                        <div class="text-navy fw-600 small"><sec:authentication property="principal.name"/></div>
                         <div class="text-gray-500 xsmall">관리자</div>
                     </div>
                 </a>
             </sec:authorize>
 
-            <sec:authorize access="hasRole('ROLE_PROF')">
+            <sec:authorize access="hasRole('ROLE_PROFESSOR')">
                 <a href="<c:url value='/professor/mypage'/>"
                    class="btn btn-white rounded-pill h-40 px-2 d-flex align-items-center gap-2 text-decoration-none">
-                    <div class="avatar">U</div>
+                    <div class="avatar">P</div>
                     <div class="text-start lh-1">
-                        <div class="text-navy fw-600 small"><sec:authentication property="principal.username"/></div>
+                        <div class="text-navy fw-600 small"><sec:authentication property="principal.name"/></div>
                         <div class="text-gray-500 xsmall">교수</div>
+                    </div>
+                </a>
+            </sec:authorize>
+
+            <sec:authorize access="hasRole('ROLE_ADVISOR')">
+                <a href="<c:url value='/advisor/mypage'/>"
+                   class="btn btn-white rounded-pill h-40 px-2 d-flex align-items-center gap-2 text-decoration-none">
+                    <div class="avatar">A</div>
+                    <div class="text-start lh-1">
+                        <div class="text-navy fw-600 small"><sec:authentication property="principal.name"/></div>
+                        <div class="text-gray-500 xsmall">지도교수</div>
                     </div>
                 </a>
             </sec:authorize>
@@ -59,13 +70,14 @@
             <sec:authorize access="hasRole('ROLE_STUDENT')">
                 <a href="<c:url value='/student/mypage'/>"
                    class="btn btn-white rounded-pill h-40 px-2 d-flex align-items-center gap-2 text-decoration-none">
-                    <div class="avatar">U</div>
+                    <div class="avatar">S</div>
                     <div class="text-start lh-1">
-                        <div class="text-navy fw-600 small"><sec:authentication property="principal.username"/></div>
+                        <div class="text-navy fw-600 small"><sec:authentication property="principal.name"/></div>
                         <div class="text-gray-500 xsmall">학생</div>
                     </div>
                 </a>
             </sec:authorize>
+
         </div>
     </div>
 </header>

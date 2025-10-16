@@ -3,12 +3,14 @@ package com.ac.kr.academy.controller.auth;
 import com.ac.kr.academy.domain.dept.Dept;
 import com.ac.kr.academy.domain.user.User;
 import com.ac.kr.academy.service.user.UserService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,6 +18,7 @@ import java.util.List;
  * JSP 페이지 이동 역할
  */
 
+@Slf4j
 @Controller
 @RequestMapping("/auth")
 public class AuthController {
@@ -28,12 +31,12 @@ public class AuthController {
 
     //기본 루트 접속시 로그인페이지로 이동
     @GetMapping("/")
-    public String home(){
+    public String home() {
         return "redirect:/auth/login";
     }
 
     @GetMapping("/login")
-    public String loginPage(Authentication authentication){
+    public String loginPage(Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
             // 이미 로그인되어 있으면 홈으로 이동
             return "redirect:/auth/index";
@@ -43,40 +46,40 @@ public class AuthController {
 
     //비밀번호 찾기
     @GetMapping("/find-password")
-    public String findPasswordPage(){
+    public String findPasswordPage() {
         return "auth/find-password";
     }
 
     //비밀번호 변경 페이지로 이동
     @GetMapping("/change-password")
-    public String changePasswordPage(){
+    public String changePasswordPage() {
         return "auth/change-password";
     }
 
     //비밀번호 초기화
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/reset-password")
-    public String resetPasswordPage(){
+    public String resetPasswordPage() {
         return "auth/reset-password";
     }
 
     //접속기록관리
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/log-history")
-    public String logHistoryPage(){
+    public String logHistoryPage() {
         return "log/log-history";
     }
 
     //로그 모니터링
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/log-monitor")
-    public String logMonitorPage(){
+    public String logMonitorPage() {
         return "log/log-monitor";
     }
 
     //메인페이지
     @GetMapping("/index")
-    public String indexPage(){
+    public String indexPage() {
         return "common/index";
     }
 
@@ -84,7 +87,7 @@ public class AuthController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/advisor-role")
     public String showAssignAdvisorPage(Model model){
-        List<User> professors = userService.findAllProfessors();
+        List<User> professors = userService.findAllProfessorsAndAdvisors();
         model.addAttribute("professorList", professors);
 
         List<Dept> depts = userService.findAllDepts();

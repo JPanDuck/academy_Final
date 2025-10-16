@@ -47,7 +47,7 @@
             return;
         }
 
-        fetch('/api/auth/change-password', {
+        fetch('${pageContext.request.contextPath}/api/auth/change-password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
