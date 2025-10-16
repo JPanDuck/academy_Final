@@ -17,13 +17,13 @@
 </head>
 <body class="bg-page">
 
-<%-- ✅ 공통 헤더 --%>
+<%-- 공통 헤더 --%>
 <%@ include file="/WEB-INF/views/components/header.jsp" %>
 
 <main class="py-4">
     <div class="container-1200 d-flex gap-24">
 
-        <%-- ✅ 사이드바 --%>
+        <%-- 사이드바 --%>
         <%@ include file="/WEB-INF/views/components/sidebar.jsp" %>
 
         <section class="flex-1 d-flex flex-column gap-24">
@@ -55,7 +55,7 @@
     </div>
 </main>
 
-<%-- ✅ 공통 footer --%>
+<%-- 공통 footer --%>
 <%@ include file="/WEB-INF/views/components/footer.jsp" %>
 
 <!-- 스크립트 -->

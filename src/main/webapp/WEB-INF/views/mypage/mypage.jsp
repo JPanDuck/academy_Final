@@ -62,7 +62,7 @@
                 <input type="text" id="role" class="form-control" readonly />
             </div>
 
-            <!-- ✅ 비밀번호 변경 섹션 추가 -->
+            <!--비밀번호 변경 섹션 추가 -->
             <hr class="my-4">
             <h5 class="fw-bold mb-3">비밀번호 변경</h5>
 
@@ -99,7 +99,7 @@
 <script>
     const token = localStorage.getItem("accessToken");
 
-    // ✅ 내 정보 불러오기
+    //내 정보 불러오기
     async function loadMyInfo() {
         const res = await fetch("${ctx}/api/mypage/me", {
             headers: { "Authorization": `Bearer ${token}` }
@@ -121,7 +121,7 @@
         $("#role").val(user.role);
     }
 
-    // ✅ 내 정보 수정
+    //내 정보 수정
     async function updateMyInfo() {
         const user = {
             username: $("#username").val(),
@@ -148,7 +148,7 @@
         }
     }
 
-    // ✅ 비밀번호 변경
+    //비밀번호 변경
     async function changePassword() {
         const currentPassword = $("#currentPassword").val().trim();
         const newPassword = $("#newPassword").val().trim();
@@ -163,7 +163,7 @@
             return;
         }
 
-        // ✅ 수정된 부분
+        //수정된 부분
         const res = await fetch("${ctx}/api/auth/change-password", {
             method: "POST",
             headers: {
@@ -177,12 +177,12 @@
         });
 
         if (res.ok) {
-            alert("✅ 비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요.");
+            alert("비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요.");
             localStorage.removeItem("accessToken");
             location.href = "${ctx}/auth/login";
         } else {
             const msg = await res.text();
-            alert("❌ 비밀번호 변경 실패: " + msg);
+            alert("비밀번호 변경 실패: " + msg);
         }
     }
 

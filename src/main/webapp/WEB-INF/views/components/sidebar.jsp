@@ -7,14 +7,14 @@
   <div class="menu-cap">MENU</div>
   <ul class="menu-list">
 
-    <!-- ✅ 공통 메뉴 -->
+    <!--공통 메뉴 -->
     <li><a href="<c:url value='/calendar'/>">학사일정</a></li>    <%--병래--%>
     <li><a href="<c:url value='/notificationList'/>">알림센터</a></li>
     <li><a href="<c:url value='/notices'/>">공지사항</a></li>
     <li><a href="<c:url value='/mypage'/>">마이페이지</a></li>
 
 
-    <!-- ✅ 관리자 메뉴 -->
+    <!--관리자 메뉴 -->
   <sec:authorize access="hasRole('ROLE_ADMIN')">
     <li><a href="<c:url value='/auth/log-history'/>">접속 기록 관리</a></li>
     <li><a href="<c:url value='/auth/log-monitor'/>">로그 모니터링</a></li>
@@ -22,14 +22,14 @@
     <li><a href="<c:url value='/auth/advisor-role'/>">지도교수 지정</a></li>
 </sec:authorize>
 
-    <!-- ✅ 교수 메뉴 -->
+    <!--교수 메뉴 -->
    <sec:authorize access="hasRole('ROLE_PROFESSOR')">
       <li><a href="<c:url value='/professor-timetable'/>">내 강의 시간표</a></li> <%--병래--%>
       <li><a href="<c:url value='/grade-input'/>">성적 입력</a></li>
       <li><a href="<c:url value='/course-manage'/>">강좌 관리</a></li> <%--병래--%>
     </sec:authorize>
 
-      <!-- ✅ 지도교수 메뉴 -->
+      <!--지도교수 메뉴 -->
    <sec:authorize access="hasRole('ROLE_ADVISOR')">
       <li><a href="<c:url value='/professor-timetable'/>">내 강의 시간표</a></li> <%--병래--%>
       <li><a href="<c:url value='/grade-input'/>">성적 입력</a></li>
@@ -37,7 +37,7 @@
       <li><a href="<c:url value='/graduation-review'/>">졸업 심사</a></li>
     </sec:authorize>
 
-    <!-- ✅ 학생 메뉴 -->
+    <!--학생 메뉴 -->
     <sec:authorize access="hasRole('ROLE_STUDENT')">
       <li><a href="<c:url value='/enrollment'/>">수강 신청</a></li> <%--병래--%>
       <li><a href="<c:url value='/student-timetable'/>">내 시간표</a></li> <%--병래--%>

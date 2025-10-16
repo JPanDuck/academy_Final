@@ -222,7 +222,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="script/common-ui.js"></script>
 <script src="script/app.js"></script>
-<!-- ✅ 공통 include: static/mapper/... -->
+<!--공통 include: static/mapper/... -->
 <script>
   $(function () {
     $("#header").load("/mapper/header.html");

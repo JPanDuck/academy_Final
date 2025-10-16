@@ -36,7 +36,7 @@
             </div>
         </div>
 
-        <!-- ✅ 교수/지도교수 리스트 -->
+        <!--교수/지도교수 리스트 -->
         <table class="table table-hover align-middle text-center">
             <thead class="table-light">
             <tr>
@@ -54,7 +54,7 @@
             </tbody>
         </table>
 
-        <!-- ✅ 학과 선택 모달 -->
+        <!--학과 선택 모달 -->
         <div class="modal fade" id="deptModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-3">
@@ -84,7 +84,7 @@
             </div>
         </div>
 
-        <!-- ✅ 메시지 -->
+        <!--메시지 -->
         <div id="message" class="alert mt-3 text-center small" style="display:none;"></div>
     </section>
 </main>
@@ -104,12 +104,12 @@
         messageDiv.innerText = text;
     }
 
-    // ✅ null 안전 출력
+    //null 안전 출력
     function safe(v) {
         return (v === null || v === undefined || v === "" || v === false) ? "-" : v;
     }
 
-    // ✅ 리스트 불러오기
+    //리스트 불러오기
     function loadProfessors(roleFilter) {
         $("#professorTableBody").html(`<tr><td colspan="7" class="text-gray-500">불러오는 중...</td></tr>`);
 
@@ -126,7 +126,7 @@
         });
     }
 
-    // ✅ 테이블 렌더링
+    //테이블 렌더링
     function renderTable() {
         if (!professors || professors.length === 0) {
             $("#professorTableBody").html(`<tr><td colspan="7" class="text-muted">등록된 교수가 없습니다.</td></tr>`);
@@ -155,14 +155,14 @@
         $("#professorTableBody").html(rows);
     }
 
-    // ✅ 학과 선택 모달 열기
+    //학과 선택 모달 열기
     function openDeptModal(profId) {
         $("#selectedProfessorId").val(profId);
         const modal = new bootstrap.Modal(document.getElementById("deptModal"));
         modal.show();
     }
 
-    // ✅ 지도교수 지정
+    //지도교수 지정
     $("#deptSelectForm").on("submit", function(e) {
         e.preventDefault();
         const professorUserId = $("#selectedProfessorId").val();
@@ -176,10 +176,10 @@
                 loadProfessors($("#roleFilter").val());
                 bootstrap.Modal.getInstance(document.getElementById("deptModal")).hide();
             })
-            .fail(err => showMessage("❌ 지정 실패: " + err.responseText, "danger"));
+            .fail(err => showMessage("지정 실패: " + err.responseText, "danger"));
     });
 
-    // ✅ 지도교수 권한 회수
+    //지도교수 권한 회수
     function revertAdvisor(professorUserId) {
         if (!confirm("이 교수의 지도교수 권한을 해제하시겠습니까?")) return;
 
@@ -188,14 +188,14 @@
                 showMessage(msg, "warning");
                 loadProfessors($("#roleFilter").val());
             })
-            .fail(err => showMessage("❌ 회수 실패: " + err.responseText, "danger"));
+            .fail(err => showMessage("회수 실패: " + err.responseText, "danger"));
     }
 
-    // ✅ 필터 및 새로고침
+    //필터 및 새로고침
     $("#roleFilter").on("change", () => loadProfessors($("#roleFilter").val()));
     $("#reloadBtn").on("click", () => loadProfessors($("#roleFilter").val()));
 
-    // ✅ 페이지 로드시 전체 불러오기
+    //페이지 로드시 전체 불러오기
     $(function() { loadProfessors(); });
 </script>
 </body>

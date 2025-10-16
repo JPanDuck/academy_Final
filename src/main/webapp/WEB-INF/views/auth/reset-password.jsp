@@ -66,7 +66,7 @@
 <!-- JS 로직 -->
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <script>
-    // ✅ 비밀번호 초기화 요청 처리
+    //비밀번호 초기화 요청 처리
     document.getElementById("resetForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 

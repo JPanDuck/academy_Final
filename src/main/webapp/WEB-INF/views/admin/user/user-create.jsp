@@ -13,14 +13,14 @@
 </head>
 
 <body class="bg-page">
-<!-- ✅ 공통 Header -->
+<!--공통 Header -->
 <jsp:include page="/WEB-INF/views/components/header.jsp"/>
 
 <main class="container-1200 d-flex gap-24 py-4">
-    <!-- ✅ 공통 Sidebar -->
+    <!--공통 Sidebar -->
     <jsp:include page="/WEB-INF/views/components/sidebar.jsp"/>
 
-    <!-- ✅ 카드 형태의 본문 -->
+    <!--카드 형태의 본문 -->
     <section class="flex-1 card-white p-4 shadow-sm">
         <h4 class="fw-bold mb-3">계정 생성</h4>
 
@@ -54,14 +54,14 @@
     </section>
 </main>
 
-<!-- ✅ 공통 Footer -->
+<!--공통 Footer -->
 <jsp:include page="/WEB-INF/views/components/footer.jsp"/>
 
-<!-- ✅ JS -->
+<!--JS -->
 <script src="<c:url value='/vendor/jquery/jquery-3.7.1.min.js'/>"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- ✅ 원본 스크립트 그대로 유지 -->
+<!--원본 스크립트 그대로 유지 -->
 <script>
     document.addEventListener('DOMContentLoaded', function (){
         const roleSelect = document.getElementById('role');
