@@ -19,7 +19,7 @@ public class CalendarController {
 
     private final CalendarService calendarService;
 
-    /** ✅ 일정 목록 */
+    /**일정 목록 */
     @GetMapping({"", "/", "/list"})
     public String list(Model model) {
         List<Calendar> calendars = calendarService.findAll();
@@ -27,18 +27,18 @@ public class CalendarController {
         return "calendar/list";
     }
 
-    /** ✅ 일정 등록 폼 */
+    /**일정 등록 폼 */
     @GetMapping("/add")
     public String addForm(Model model) {
         model.addAttribute("calendar", new Calendar());
         return "calendar/add";
     }
 
-    /** ✅ 일정 등록 처리 */
+    /**일정 등록 처리 */
     @PostMapping("/add")
     public String add(@ModelAttribute Calendar calendar,
                       RedirectAttributes ra) {
-        log.info("📌 일정 등록 요청: {}", calendar);
+        log.info("일정 등록 요청: {}", calendar);
         calendarService.saveCalendar(calendar);
         ra.addFlashAttribute("message", "일정이 성공적으로 등록되었습니다.");
         return "redirect:/calendar";
@@ -60,7 +60,7 @@ public class CalendarController {
     public String edit(@PathVariable Long id,
                        @ModelAttribute Calendar calendar,
                        RedirectAttributes ra) {
-        log.info("📌 일정 수정 요청: {}", calendar);
+        log.info("일정 수정 요청: {}", calendar);
         calendar.setId(id); // 안전하게 id 세팅
         calendarService.saveCalendar(calendar);
         ra.addFlashAttribute("message", "일정이 성공적으로 수정되었습니다.");

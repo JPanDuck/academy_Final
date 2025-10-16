@@ -21,7 +21,7 @@ public class MyPageRestController {
     private final UserService userService;
 
     /**
-     * ✅ 내 정보 조회
+     *내 정보 조회
      */
     @GetMapping("/me")
     public ResponseEntity<?> getMyInfo(Authentication auth) {
@@ -38,7 +38,7 @@ public class MyPageRestController {
     }
 
     /**
-     * ✅ 내 정보 수정
+     *내 정보 수정
      */
     @PutMapping("/update-me")
     public ResponseEntity<?> updateMyInfo(@RequestBody UpdateUserRequestDTO requestDTO, Authentication auth) {

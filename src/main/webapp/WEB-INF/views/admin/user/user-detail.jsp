@@ -11,9 +11,12 @@
     <link rel="stylesheet" href="<c:url value='/css/style.css'/>"/>
 </head>
 <body class="bg-page">
+
 <jsp:include page="/WEB-INF/views/components/header.jsp"/>
+
 <main class="container-1200 d-flex gap-24 py-4">
     <jsp:include page="/WEB-INF/views/components/sidebar.jsp"/>
+
     <section class="flex-1 card-white p-4 shadow-sm">
         <div class="d-flex justify-content-between mb-3">
             <h4 class="fw-bold">사용자 상세</h4>
@@ -29,6 +32,7 @@
                 </a>
             </div>
         </div>
+
         <table class="table table-bordered">
             <tbody>
             <tr><th>ID</th><td id="id"></td></tr>
@@ -40,17 +44,50 @@
         </table>
     </section>
 </main>
+
 <jsp:include page="/WEB-INF/views/components/footer.jsp"/>
 <script src="<c:url value='/vendor/jquery/jquery-3.7.1.min.js'/>"></script>
+
 <script>
-    $(function(){
+    $(function() {
         const id = "${userId}";
-        $.get("${pageContext.request.contextPath}/api/admin/user/" + id, function(user){
-            $("#id").text(user.id);
-            $("#name").text(user.name);
-            $("#email").text(user.email);
-            $("#role").text(user.role);
-            $("#phone").text(user.phone);
+        const token = localStorage.getItem("accessToken");
+
+        if (!token) {
+            alert("인증 토큰이 없습니다. 다시 로그인해주세요.");
+            window.location.href = "/auth/login";
+            return;
+        }
+
+        $.ajax({
+            url: "${pageContext.request.contextPath}/api/admin/user/detail/" + id,  // ✅ 경로 수정
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            success: function(res) {
+                console.log("사용자 응답:", res);
+                const user = res.data || res; // ✅ 래핑 대비
+
+                $("#id").text(user.id || "-");
+                $("#name").text(user.name || "-");
+                $("#email").text(user.email || "-");
+                $("#role").text(user.role || "-");
+                $("#phone").text(user.phone || "-");
+            },
+            error: function(xhr) {
+                console.error("사용자 정보 조회 실패:", xhr);
+                if (xhr.status === 401 || xhr.status === 403) {
+                    alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+                    localStorage.removeItem("accessToken");
+                    window.location.href = "/auth/login";
+                } else if (xhr.status === 404) {
+                    alert("사용자를 찾을 수 없습니다.");
+                } else {
+                    alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
+                }
+            }
         });
     });
 </script>

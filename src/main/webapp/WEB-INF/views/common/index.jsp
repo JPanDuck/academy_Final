@@ -112,7 +112,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-    // ✅ 인원 분포 차트 (하드코딩)
+    //인원 분포 차트 (하드코딩)
     const ctx = document.getElementById('populationChart');
     new Chart(ctx, {
         type: 'doughnut',
