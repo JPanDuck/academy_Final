@@ -32,6 +32,7 @@
                 <option value="">전체</option>
                 <option value="ADMIN">관리자</option>
                 <option value="PROFESSOR">교수</option>
+                <option value="ADVISOR">지도 교수</option>
                 <option value="STUDENT">학생</option>
             </select>
         </div>

@@ -27,6 +27,13 @@
       <li><a href="<c:url value='/professor-timetable'/>">내 강의 시간표</a></li> <%--병래--%>
       <li><a href="<c:url value='/grade-input'/>">성적 입력</a></li>
       <li><a href="<c:url value='/course-manage'/>">강좌 관리</a></li> <%--병래--%>
+    </sec:authorize>
+
+      <!-- ✅ 지도교수 메뉴 -->
+   <sec:authorize access="hasRole('ROLE_ADVISOR')">
+      <li><a href="<c:url value='/professor-timetable'/>">내 강의 시간표</a></li> <%--병래--%>
+      <li><a href="<c:url value='/grade-input'/>">성적 입력</a></li>
+      <li><a href="<c:url value='/course-manage'/>">강좌 관리</a></li> <%--병래--%>
       <li><a href="<c:url value='/graduation-review'/>">졸업 심사</a></li>
     </sec:authorize>
 

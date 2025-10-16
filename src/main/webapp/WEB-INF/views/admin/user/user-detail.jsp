@@ -45,7 +45,7 @@
 <script>
     $(function(){
         const id = "${userId}";
-        $.get("${pageContext.request.contextPath}/api/admin/user/detail/" + id, function(user){
+        $.get("${pageContext.request.contextPath}/api/admin/user/" + id, function(user){
             $("#id").text(user.id);
             $("#name").text(user.name);
             $("#email").text(user.email);

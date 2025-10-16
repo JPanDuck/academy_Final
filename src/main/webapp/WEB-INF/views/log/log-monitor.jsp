@@ -16,12 +16,10 @@
     <link rel="icon" href="data:,">
 
     <style>
-        /* ✅ 로그 모니터링 전용 확장 스타일 */
         .container-1200 {
-            max-width: 1600px !important; /* 기존 1200px → 1600px 확장 */
+            max-width: 1600px !important;
             margin: 0 auto;
         }
-
         #logArea {
             background: #000;
             color: #00FF00;
@@ -35,87 +33,94 @@
             font-size: 13px;
             line-height: 1.4;
         }
-
-        @media (max-width: 768px) {
-            #logArea {
-                height: 60vh;
-                font-size: 12px;
-            }
-        }
     </style>
 </head>
 <body class="bg-page">
 
+<!-- 헤더 -->
 <%@ include file="/WEB-INF/views/components/header.jsp" %>
 
 <main class="py-4">
     <div class="container-1200 d-flex gap-24">
 
+        <!-- 사이드바 -->
         <%@ include file="/WEB-INF/views/components/sidebar.jsp" %>
 
+        <!-- 로그 모니터링 -->
         <section class="flex-1">
             <div class="card-white p-20">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="mb-0">시스템 관리 - 로그 모니터링</h4>
-                    <button class="btn btn-sm btn-primary" onclick="loadLogs()">새로고침</button>
+                    <h5 class="mb-0 text-navy fw-700">시스템 로그 모니터링</h5>
+                    <button class="btn btn-sm btn-navy" onclick="loadLogs()">
+                        <i class="bi bi-arrow-repeat"></i> 새로고침
+                    </button>
                 </div>
 
-                <pre id="logArea"></pre>
+                <pre id="logArea">Loading logs...</pre>
             </div>
         </section>
+
     </div>
 </main>
 
+<!-- 푸터 -->
 <%@ include file="/WEB-INF/views/components/footer.jsp" %>
+
+<!-- 스크립트 -->
+<script src="<c:url value='/vendor/jquery/jquery-3.7.1.min.js'/>"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     async function loadLogs() {
-        const logArea = document.getElementById('logArea');
-        const jwtToken = localStorage.getItem('accessToken');
+        const logArea = document.getElementById("logArea");
+        let token = localStorage.getItem("accessToken");
 
-        if (!jwtToken) {
-            logArea.textContent = "⚠️ JWT 토큰이 없습니다. 로그인 상태를 확인하세요.";
+        if (!token) {
+            logArea.textContent = "⚠️ 로그인 토큰이 없습니다. 관리자 로그인 후 다시 시도하세요.";
             return;
         }
 
+        // 혹시 "Bearer " 가 붙어있다면 제거
+        token = token.replace(/^Bearer\s+/i, "").trim();
+
         try {
-            const res = await fetch('/api/admin/logs/monitor', {
-                method: 'GET',
+            const res = await fetch("/api/admin/logs/monitor", {
+                method: "GET",
                 headers: {
-                    'Authorization': `Bearer ${jwtToken.trim()}`,
-                    'Content-Type': 'application/json'
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
                 }
             });
 
             if (!res.ok) {
-                throw new Error(`로그 API 호출 실패: ${res.status} ${res.statusText}`);
+                const contentType = res.headers.get("content-type") || "";
+                let message = "";
+
+                if (contentType.includes("application/json")) {
+                    const data = await res.json().catch(() => ({}));
+                    message = data.message || JSON.stringify(data);
+                } else {
+                    message = await res.text(); // JSON 아니면 그대로 텍스트 읽기
+                }
+
+                logArea.textContent = `HTTP ${res.status} ${res.statusText}\n${message}`;
+                return;
             }
+
 
             const data = await res.json();
-            const logLines = data.logs || [];
-            let displayContent = '';
+            logArea.textContent = Array.isArray(data.logs)
+                ? data.logs.join("\n")
+                : data.message || "No logs found.";
 
-            if (logLines.length > 0) {
-                displayContent = logLines.join('\n');
-            } else if (data.message) {
-                displayContent = data.message;
-            } else {
-                displayContent = "로그 데이터가 없습니다.";
-            }
-
-            logArea.textContent = displayContent;
             logArea.scrollTop = logArea.scrollHeight;
-        } catch (e) {
-            console.error("로그 로딩 실패: ", e);
-            logArea.textContent = "❌ 로그 로딩에 실패했습니다. 관리자 권한을 확인해주세요.";
+
+        } catch (err) {
+            logArea.textContent = "Error loading logs: " + err;
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        loadLogs();
-        // setInterval(loadLogs, 5000); // 필요시 자동 새로고침
-    });
+    document.addEventListener("DOMContentLoaded", loadLogs);
 </script>
-
 </body>
 </html>

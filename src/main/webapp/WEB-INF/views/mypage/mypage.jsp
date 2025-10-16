@@ -163,8 +163,9 @@
             return;
         }
 
-        const res = await fetch("${ctx}/api/mypage/change-password", {
-            method: "PUT",
+        // ✅ 수정된 부분
+        const res = await fetch("${ctx}/api/auth/change-password", {
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
@@ -184,6 +185,7 @@
             alert("❌ 비밀번호 변경 실패: " + msg);
         }
     }
+
 
     $("#saveBtn").on("click", (e) => {
         e.preventDefault();

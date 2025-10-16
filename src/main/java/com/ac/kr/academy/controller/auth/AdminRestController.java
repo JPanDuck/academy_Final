@@ -17,17 +17,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 관리자 전용 API
- * - 로그인 ID(username), 임시 비밀번호 생성
- * - 비밀번호 초기화
- */
-
 @Slf4j
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-//@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminRestController {
 
     private final UserService userService;
@@ -51,15 +45,14 @@ public class AdminRestController {
 
     //비밀번호 초기화
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
-        if (username == null) {
-            return ResponseEntity.badRequest().body("username 파라미터가 없습니다.");
+    public ResponseEntity<?> resetPassword(@RequestParam String username){
+        try{
+            String tempPassword = userService.resetPassword(username);
+            return ResponseEntity.ok(username + "의 비밀번호가 초기화 되었습니다. 새 임시 비밀번호: " + tempPassword);
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-        userService.resetPassword(username);
-        return ResponseEntity.ok("비밀번호가 초기화되었습니다.");
     }
-
 
     //사용자 전체 조회
     @GetMapping("/user/all")
@@ -72,43 +65,57 @@ public class AdminRestController {
     }
 
     //권한별 사용자 조회
+    // 권한별 사용자 조회
     @GetMapping("/user/role")
-    public ResponseEntity<?> getUsersByRole(@RequestParam String role){
-        List<User> userList = userService.getUsersByRole(role);
-        if(userList.isEmpty()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 권한을 가진 사용자가 없습니다.");
+    public ResponseEntity<?> getUsersByRole(@RequestParam String role) {
+        if (role == null || role.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("역할(role) 파라미터는 필수입니다.");
         }
-        return ResponseEntity.ok(userList);
+
+        // ROLE_ 접두어 자동 보정
+        String normalizedRole = role.toUpperCase().startsWith("ROLE_")
+                ? role.toUpperCase()
+                : "ROLE_" + role.toUpperCase();
+
+        List<User> users = userService.getUsersByRole(normalizedRole);
+        return ResponseEntity.ok(users == null ? java.util.Collections.emptyList() : users);
     }
 
+
     //사용자 상세정보 조회
-    // 사용자 상세 조회 수정됨
-    @GetMapping("/user/{userId}")
+    @GetMapping("/user/detail/{userId}")
     public ResponseEntity<?> getUserDetail(@PathVariable Long userId){
         try{
             User user = userService.findById(userId);
+
             if(user == null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
             }
 
+            //역할별(학생,교수 등) 상세정보 - 각 테이블의 정보
             Object roleDetail = userService.findByRole(userId, user.getRole());
+
+            //기본 정보와 상세정보 합친 응답 생성(Map) - 비밀번호 제외
             Map<String, Object> response = new HashMap<>();
             response.put("id", user.getId());
             response.put("username", user.getUsername());
             response.put("name", user.getName());
             response.put("email", user.getEmail());
-            response.put("phone", user.getPhone());
+            response.put("phone", user.getPassword());
             response.put("role", user.getRole());
-            if(roleDetail != null) response.put("roleDetail", roleDetail);
+
+            //상세 정보 추가 - 키이름은 roleDetail로 통일, 역할에 맞춰 파싱
+            if(roleDetail != null){
+                response.put("roleDetail", roleDetail);
+            }
 
             return ResponseEntity.ok(response);
-        } catch (Exception e){
+        }catch (Exception e){
             log.error("사용자 상세 정보 조회중 오류 발생: userId={}", userId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("사용자 상세 정보 조회중 오류 발생: " + e.getMessage());
         }
     }
-
 
 
     //사용자 정보 수정
@@ -178,6 +185,7 @@ public class AdminRestController {
             );
         }
     }
+
     //교수 -> 지도교수 권한 변경
     @PostMapping("/assign-advisor")
     public ResponseEntity<?> assignAdvisorByDept(@RequestParam Long professorUserId, @RequestParam Long deptId){

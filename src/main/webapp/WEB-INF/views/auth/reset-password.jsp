@@ -66,6 +66,7 @@
 <!-- JS 로직 -->
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <script>
+    // ✅ 비밀번호 초기화 요청 처리
     document.getElementById("resetForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -79,6 +80,7 @@
         }
 
         try {
+            // 1️⃣ 비밀번호 초기화 API 호출
             const res = await fetch("${ctx}/api/admin/reset-password", {
                 method: "POST",
                 headers: {
@@ -88,12 +90,29 @@
                 body: JSON.stringify({ username, newPassword })
             });
 
-            if (res.ok) {
-                alert("비밀번호가 성공적으로 초기화되었습니다.");
-                location.href = "${ctx}/auth/user-detail?id=" + encodeURIComponent(username);
-            } else {
-                alert("비밀번호 초기화 실패. 관리자 권한 또는 사용자 정보를 확인하세요.");
+            if (!res.ok) {
+                const msg = await res.text();
+                alert("비밀번호 초기화 실패: " + msg);
+                return;
             }
+
+            alert("비밀번호가 성공적으로 초기화되었습니다.");
+
+            // 2️⃣ username으로 id 조회 후 상세페이지로 이동
+            const res2 = await fetch("${ctx}/api/admin/user/by-username?username=" + encodeURIComponent(username), {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (res2.ok) {
+                const data = await res2.json();
+                // 🔹 조회된 id로 상세 페이지 이동
+                location.href = "${ctx}/auth/user-detail?id=" + data.id;
+            } else {
+                // 🔹 실패 시 목록으로 이동
+                alert("사용자 정보를 찾을 수 없습니다. 목록으로 이동합니다.");
+                location.href = "${ctx}/auth/user-list";
+            }
+
         } catch (error) {
             console.error(error);
             alert("서버 오류가 발생했습니다.");

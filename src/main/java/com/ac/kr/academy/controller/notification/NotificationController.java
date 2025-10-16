@@ -18,10 +18,16 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     // 1) 특정 targetId 알림 목록
-    @GetMapping("/notifications/{targetId}")
-    public String notificationList(@PathVariable Long targetId, Model model){
+    @GetMapping("/notificationList")
+    public String myNotificationList(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        if (userDetails == null) {
+            return "redirect:/auth/login";
+        }
+        Long targetId = userDetails.getUser().getId();
         model.addAttribute("notifications", notificationService.getNotificationList(targetId));
         return "notification/notificationList";
-        // => /WEB-INF/views/notification/notificationList.jsp
     }
-}
+
+    // => /WEB-INF/views/notification/notificationList.jsp
+    }
+

@@ -190,9 +190,16 @@ public class UserService {
                 professorName, deptName, assignedCount, roleStatus);
     }
 
-    //ROLE_PROFESSOR 목록 조회 - advisor-role.jsp 에서 사용
-    public List<User> findAllProfessors(){
-        return userMapper.findAllUsersByRole("ROLE_PROFESSOR");
+    //ROLE_ADVISOR, ROLE_PROFESSOR 목록 조회 - advisor-role.jsp 에서 사용
+    public List<User> findAllProfessorsAndAdvisors(){
+        List<User> professors = userMapper.findAllUsersByRole("ROLE_PROFESSOR");
+        List<User> advisors = userMapper.findAllUsersByRole("ROLE_ADVISOR");
+
+        //두 리스트 합치기 - 중복방지 없이 단순히 합치기
+        List<User> allProfessors = new ArrayList<>(professors);
+        allProfessors.addAll(advisors);
+
+        return allProfessors;
     }
 
     //모든 학과 목록 조회 - advisor-role.jsp 에서 사용

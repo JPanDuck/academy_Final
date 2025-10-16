@@ -43,6 +43,8 @@ public class CustomUserDetails implements UserDetails {
         return user.getUsername();
     }
 
+    public String getName() { return user.getName(); }
+
     // 계정 만료 여부 - 만료X
     @Override
     public boolean isAccountNonExpired() {

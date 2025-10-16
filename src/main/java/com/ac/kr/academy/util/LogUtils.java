@@ -1,31 +1,50 @@
 package com.ac.kr.academy.util;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.*;
 import java.nio.file.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-/**
-   LogUtils : 공용 기능 (파일읽기) -> static => 주입 필요X
-
- * [로그 모니터링]
- * 로그 파일에서 마지막 N줄을 읽고, (filter 키워드가 있으면 필터링)
- */
 
 public class LogUtils {
 
     private static final String LOG_FILE_PATH = "./logs/app.log";
 
-//WARN, ERROR 만 출력
+    //WARN, ERROR 만 출력 — 깨진 문자 무시
     public static List<String> tail(int lines) throws IOException {
-        List<String> all = Files.readAllLines(Paths.get(LOG_FILE_PATH));
+        Path path = Paths.get(LOG_FILE_PATH);
 
+        // 파일이 없을 경우 빈 리스트 반환
+        if (!Files.exists(path)) {
+            return List.of("WARN - 로그 파일이 존재하지 않습니다: " + LOG_FILE_PATH);
+        }
+
+        //UTF-8 디코더 설정 (깨진 문자 무시)
+        CharsetDecoder decoder = StandardCharsets.UTF_8
+                .newDecoder()
+                .onMalformedInput(CodingErrorAction.IGNORE)
+                .onUnmappableCharacter(CodingErrorAction.IGNORE);
+
+        // 파일 전체를 바이트로 읽고, 디코딩
+        byte[] bytes = Files.readAllBytes(path);
+        CharBuffer decoded = decoder.decode(ByteBuffer.wrap(bytes));
+        String content = decoded.toString();
+
+        // 줄 단위 분리
+        List<String> all = List.of(content.split("\\R"));
+
+        //뒤에서 N줄만, WARN/ERROR만 필터
         return all.stream()
                 .skip(Math.max(0, all.size() - lines))
                 .filter(line -> line.contains("ERROR") || line.contains("WARN"))
                 .collect(Collectors.toList());
     }
+
+
+
+
 
 
 //프론트에서 filter 파라미터 입력 시 DEBUG 또는 INFO 로그도 출력 가능
