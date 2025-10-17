@@ -73,7 +73,7 @@
     </select>
 
     <select id="findByUsername" resultMap="userMap" parameterType="string">
-        SELECT id, username, password_temp, email, phone, name, role
+        SELECT id, username,password, password_temp, email, phone, name, role
         FROM users
         WHERE username = #{username}
     </select>

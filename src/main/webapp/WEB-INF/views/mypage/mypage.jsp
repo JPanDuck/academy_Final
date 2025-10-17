@@ -177,7 +177,7 @@
         });
 
         if (res.ok) {
-            alert("비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요.");
+            alert("비밀번호가 성공적으로 변경되었습니다.");
             localStorage.removeItem("accessToken");
             location.href = "${ctx}/auth/login";
         } else {

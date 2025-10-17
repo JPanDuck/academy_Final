@@ -3,6 +3,7 @@ package com.ac.kr.academy.controller.auth;
 import com.ac.kr.academy.domain.auth.RefreshToken;
 import com.ac.kr.academy.domain.user.User;
 import com.ac.kr.academy.dto.auth.ChangePasswordDTO;
+import com.ac.kr.academy.dto.auth.FindPasswordDTO;
 import com.ac.kr.academy.dto.auth.JwtResponseDTO;
 import com.ac.kr.academy.dto.auth.LoginRequestDTO;
 import com.ac.kr.academy.security.CustomUserDetails;
@@ -52,44 +53,60 @@ public class AuthRestController {
     public ResponseEntity<?> login(@Validated @RequestBody LoginRequestDTO loginRequestDTO,
                                    HttpServletRequest request,
                                    HttpServletResponse response) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequestDTO.getUsername(), loginRequestDTO.getPassword())
-        );
+        try {
+            // 사용자 인증 (Spring Security AuthenticationManager 사용)
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequestDTO.getUsername(), loginRequestDTO.getPassword())
+            );
 
-        //임시 비밀번호 여부 확인
-        boolean tempPassword = ((CustomUserDetails) auth.getPrincipal()).getUser().isPasswordTemp();
+            // 임시 비밀번호 여부 확인
+            boolean tempPassword = ((CustomUserDetails) auth.getPrincipal()).getUser().isPasswordTemp();
 
-        //인증 성공 시 토큰 발급
-        String accessToken = tokenProvider.generateAccessToken(auth);
-        String refreshToken = tokenProvider.generateRefreshToken(auth);
+            // 인증 성공 시 Access Token, Refresh Token 발급
+            String accessToken = tokenProvider.generateAccessToken(auth);
+            String refreshToken = tokenProvider.generateRefreshToken(auth);
 
-        //접속 기록 저장 로직
-        User user = userService.findByUsername(loginRequestDTO.getUsername());  //로그인한 사용자 정보
-        String ipAddress = request.getRemoteAddr(); //ip 주소 가져오기
-        logHistoryService.saveLoginLog(user.getId(), user.getUsername(), ipAddress);
+            // 로그인한 사용자 정보 조회 및 접속 로그 저장
+            User user = userService.findByUsername(loginRequestDTO.getUsername());
+            String ipAddress = request.getRemoteAddr();
+            logHistoryService.saveLoginLog(user.getId(), user.getUsername(), ipAddress);
 
-        //refresh token DB 저장 - 사용자당 1개만 유지
-        refreshTokenService.saveRefreshToken(
-                user.getId(), refreshToken,
-                LocalDateTime.now().plusSeconds(tokenProvider.getRefreshTokenValiditySeconds())
-        );
+            // Refresh Token DB 저장 (사용자당 1개만 유지)
+            refreshTokenService.saveRefreshToken(
+                    user.getId(), refreshToken,
+                    LocalDateTime.now().plusSeconds(tokenProvider.getRefreshTokenValiditySeconds())
+            );
 
-        //access token 쿠키에 담기
-        Cookie accessTokenCookie = new Cookie("ACCESS_TOKEN", accessToken);
-        accessTokenCookie.setHttpOnly(true);    // 자바스크립트 접근 방지 (XSS 공격 방어)
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(3600);      //1시간
-        response.addCookie(accessTokenCookie);
+            // Access Token 쿠키에 저장 (HttpOnly로 설정하여 XSS 방지)
+            Cookie accessTokenCookie = new Cookie("ACCESS_TOKEN", accessToken);
+            accessTokenCookie.setHttpOnly(true);
+            accessTokenCookie.setPath("/");
+            accessTokenCookie.setMaxAge(3600); // 1시간
+            response.addCookie(accessTokenCookie);
 
-        //토큰과 임시비번 상태를 클라이언트에게 응답
-        return ResponseEntity.ok(
-                JwtResponseDTO.builder()
-                        .accessToken(accessToken)
-                        .refreshToken(refreshToken)
-//                        .tokenType("Bearer")
-                        .tempPassword(tempPassword)
-                        .build()
-        );
+            // 인증 성공 응답 (JWT 정보 반환)
+            return ResponseEntity.ok(
+                    JwtResponseDTO.builder()
+                            .accessToken(accessToken)
+                            .refreshToken(refreshToken)
+                            .tempPassword(tempPassword)
+                            .build()
+            );
+
+        } catch (org.springframework.security.authentication.BadCredentialsException e) {
+            // 아이디 또는 비밀번호가 일치하지 않을 경우
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("아이디 또는 비밀번호가 틀렸습니다.");
+        } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
+            // 존재하지 않는 사용자일 경우
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("존재하지 않는 계정입니다.");
+        } catch (Exception e) {
+            // 기타 예외 처리
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("로그인 처리 중 오류가 발생했습니다.");
+        }
     }
 
     //비밀번호 변경
@@ -103,6 +120,23 @@ public class AuthRestController {
             return ResponseEntity.ok("비밀번호 변경을 완료했습니다.");
         } catch (IllegalArgumentException e){
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    //비밀번호 찾기
+    @PostMapping("/find-password")
+    public ResponseEntity<String> findPassword(@RequestBody FindPasswordDTO request){
+        if(request.getNewPassword().length() < 8){
+            return ResponseEntity.badRequest().body("새 비밀번호는 최소 8자 이상이어야 합니다.");
+        }
+
+        boolean success = userService.resetPasswordByUserInfo(
+                request.getUsername(), request.getName(), request.getEmail(), request.getNewPassword());
+
+        if(success){
+            return ResponseEntity.ok("비밀번호가 성공적으로 재설정되었습니다. 새 비밀번호로 로그인해주세요.");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("입력하신 정보가 일치하지 않습니다.");
         }
     }
 
