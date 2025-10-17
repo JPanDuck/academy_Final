@@ -24,7 +24,7 @@
     <jsp:include page="/WEB-INF/views/components/sidebar.jsp"/>
 
     <section class="flex-1 card-white p-4 shadow-sm">
-        <!-- 제목 영역 -->
+        <!-- 제목 -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="fw-bold mb-0">비밀번호 초기화</h4>
             <a href="<c:url value='/auth/user-list'/>" class="btn btn-outline-secondary btn-sm">
@@ -32,21 +32,16 @@
             </a>
         </div>
 
-        <!-- 안내문 -->
+        <!-- 안내 -->
         <div class="alert alert-warning small mb-4">
-            ⚠️ 이 기능은 <strong>관리자 전용</strong>이며, 선택한 사용자의 비밀번호를 새로 설정합니다.
+            이 기능은 <strong>관리자 전용</strong>입니다, 선택한 사용자의 비밀번호를 랜덤으로 새로 설정합니다.
         </div>
 
-        <!-- 초기화 폼 -->
+        <!-- 폼 -->
         <form id="resetForm" class="w-50">
             <div class="mb-3">
                 <label class="form-label fw-semibold">사용자 아이디</label>
                 <input type="text" id="targetUsername" name="targetUsername" class="form-control" placeholder="아이디 입력" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label fw-semibold">새 비밀번호</label>
-                <input type="password" id="newPassword" name="newPassword" class="form-control" placeholder="새 비밀번호 입력" required>
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
@@ -66,28 +61,26 @@
 <!-- JS 로직 -->
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <script>
-    //비밀번호 초기화 요청 처리
     document.getElementById("resetForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const username = document.getElementById("targetUsername").value.trim();
-        const newPassword = document.getElementById("newPassword").value.trim();
         const token = localStorage.getItem("accessToken");
 
-        if (!username || !newPassword) {
-            alert("모든 항목을 입력해주세요.");
+        if (!username) {
+            alert("아이디를 입력해주세요.");
             return;
         }
 
         try {
-            // 1️⃣ 비밀번호 초기화 API 호출
+            //비밀번호 초기화 요청 (username만 전송)
             const res = await fetch("${ctx}/api/admin/reset-password", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/x-www-form-urlencoded",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ username, newPassword })
+                body: new URLSearchParams({ username })
             });
 
             if (!res.ok) {
@@ -96,19 +89,18 @@
                 return;
             }
 
-            alert("비밀번호가 성공적으로 초기화되었습니다.");
+            const msg = await res.text();
+            alert(msg); // ex: "202501001의 비밀번호가 초기화 되었습니다. 새 임시 비밀번호: 52cd32aa"
 
-            // 2️⃣ username으로 id 조회 후 상세페이지로 이동
+            //username으로 사용자 ID 조회
             const res2 = await fetch("${ctx}/api/admin/user/by-username?username=" + encodeURIComponent(username), {
                 headers: { "Authorization": `Bearer ${token}` }
             });
 
             if (res2.ok) {
                 const data = await res2.json();
-                // 🔹 조회된 id로 상세 페이지 이동
                 location.href = "${ctx}/auth/user-detail?id=" + data.id;
             } else {
-                // 🔹 실패 시 목록으로 이동
                 alert("사용자 정보를 찾을 수 없습니다. 목록으로 이동합니다.");
                 location.href = "${ctx}/auth/user-list";
             }

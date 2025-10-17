@@ -40,6 +40,26 @@
             <tr><th>이메일</th><td id="email"></td></tr>
             <tr><th>권한</th><td id="role"></td></tr>
             <tr><th>전화번호</th><td id="phone"></td></tr>
+
+            <!-- ✅ 학생 전용 상태 표시 및 변경 -->
+            <tr id="studentStatusRow" style="display: none;">
+                <th>학생 상태</th>
+                <td>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <select id="studentStatus" class="form-select form-select-sm w-auto">
+                                <option value="재학중">재학중</option>
+                                <option value="휴학중">휴학중</option>
+                                <option value="졸업">졸업</option>
+                            </select>
+                            <button id="btnUpdateStatus" class="btn btn-sm btn-outline-primary">변경</button>
+                        </div>
+                        <div class="text-gray-600 small">
+                            현재 상태: <span id="currentStatus" class="fw-semibold text-navy">-</span>
+                        </div>
+                    </div>
+                </td>
+            </tr>
             </tbody>
         </table>
     </section>
@@ -59,22 +79,62 @@
             return;
         }
 
+        //사용자 상세정보 조회
         $.ajax({
-            url: "${pageContext.request.contextPath}/api/admin/user/detail/" + id,  // ✅ 경로 수정
+            url: "${pageContext.request.contextPath}/api/admin/user/detail/" + id,
             method: "GET",
             headers: {
                 "Authorization": "Bearer " + token,
                 "Content-Type": "application/json"
             },
             success: function(res) {
-                console.log("사용자 응답:", res);
-                const user = res.data || res; // ✅ 래핑 대비
-
+                const user = res.data || res;
                 $("#id").text(user.id || "-");
                 $("#name").text(user.name || "-");
                 $("#email").text(user.email || "-");
                 $("#role").text(user.role || "-");
                 $("#phone").text(user.phone || "-");
+
+                //학생일 경우 상태 행 표시
+                if (user.role && user.role.toUpperCase().includes("STUDENT")) {
+                    $("#studentStatusRow").show();
+
+                    // 정확한 상태 값 반영 (공백 및 대소문자 정규화)
+                    const normalizedStatus = (user.status || "").trim();
+                    const validStatuses = ["재학중", "휴학중", "졸업"];
+
+                    if (validStatuses.includes(normalizedStatus)) {
+                        $("#studentStatus").val(normalizedStatus);
+                        $("#currentStatus").text(normalizedStatus);
+                    } else {
+                        $("#studentStatus").val("재학중");
+                        $("#currentStatus").text("재학중");
+                    }
+
+                    //변경 버튼 이벤트
+                    $("#btnUpdateStatus").off("click").on("click", function() {
+                        const newStatus = $("#studentStatus").val();
+
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/api/admin/update-user/" + id + "/status",
+                            method: "PUT",
+                            headers: { "Authorization": "Bearer " + token },
+                            data: { status: newStatus },
+                            success: function(msg) {
+                                $("#currentStatus").text(newStatus);
+                                alert(msg || "학생 상태가 변경되었습니다.");
+                            },
+                            error: function(xhr) {
+                                console.error("상태 변경 실패:", xhr);
+                                if (xhr.status === 403) {
+                                    alert("권한이 없습니다.");
+                                } else {
+                                    alert("학생 상태 변경 중 오류가 발생했습니다.");
+                                }
+                            }
+                        });
+                    });
+                }
             },
             error: function(xhr) {
                 console.error("사용자 정보 조회 실패:", xhr);

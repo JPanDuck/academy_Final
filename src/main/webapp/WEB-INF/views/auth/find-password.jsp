@@ -7,34 +7,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>비밀번호 찾기</title>
 
-    <!-- 외부 CDN -->
+    <!-- 외부 리소스 -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
-
-    <!-- 정적 리소스 -->
     <link rel="stylesheet" href="<c:url value='/css/style.css'/>"/>
 </head>
 <body class="bg-page">
+
 <div class="login-wrapper">
     <div class="card-white p-4 login-card">
         <div class="text-center mb-3">
             <div class="login-logo-wrap">
-                <img class="login-logo" src="<c:url value='/img/logo.png'/>" alt="Winston College 로고"/>
+                <img class="login-logo" src="<c:url value='/img/logo.png'/>" alt="로고"/>
             </div>
             <div class="brand-title">비밀번호 찾기</div>
-            <div class="brand-sub">학번과 이메일/전화번호를 입력하세요</div>
+            <div class="brand-sub small text-gray-600">
+                아이디, 이름, 이메일을 입력하고 새 비밀번호를 설정하세요.
+            </div>
         </div>
 
         <!-- 비밀번호 찾기 폼 -->
         <form id="findPasswordForm">
-            <input type="text" class="form-control mb-2" id="studentId" name="studentId" placeholder="학번" required />
-            <input type="text" class="form-control mb-3" id="contact" name="contact" placeholder="이메일 또는 전화번호" required />
-            <button type="submit" class="btn btn-navy w-100 rounded-pill mb-2">비밀번호 변경하기</button>
+            <input type="text" id="username" name="username" class="form-control mb-2" placeholder="아이디" required/>
+            <input type="text" id="name" name="name" class="form-control mb-2" placeholder="이름" required/>
+            <input type="email" id="email" name="email" class="form-control mb-2" placeholder="이메일" required/>
+            <input type="password" id="newPassword" name="newPassword" class="form-control mb-3" placeholder="새 비밀번호 (8자 이상)" required/>
+            <button type="submit" class="btn btn-navy w-100 rounded-pill">비밀번호 재설정</button>
         </form>
 
-        <div class="text-center mt-2">
-            <a href="<c:url value='/auth/login'/>" class="xsmall text-navy">← 로그인 화면으로</a>
+        <div class="text-center mt-3">
+            <a href="<c:url value='/auth/login'/>" class="xsmall text-navy">로그인 페이지로 돌아가기</a>
         </div>
     </div>
 </div>
@@ -45,34 +48,46 @@
 
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <script>
-    document.getElementById("findPasswordForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
+    $(function() {
+        $("#findPasswordForm").on("submit", async function(e) {
+            e.preventDefault();
 
-        const studentId = document.getElementById("studentId").value.trim();
-        const contact = document.getElementById("contact").value.trim();
+            const username = $("#username").val().trim();
+            const name = $("#name").val().trim();
+            const email = $("#email").val().trim();
+            const newPassword = $("#newPassword").val().trim();
 
-        if (!studentId || !contact) {
-            alert("모든 항목을 입력해주세요.");
-            return;
-        }
-
-        try {
-            const res = await fetch("${ctx}/api/auth/find-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ studentId, contact })
-            });
-
-            if (res.status === 200) {
-                alert("본인 확인이 완료되었습니다. 비밀번호를 변경해주세요.");
-                location.href = "${ctx}/auth/change-password";
-            } else {
-                alert("입력한 정보와 일치하는 계정이 없습니다.");
+            if (!username || !name || !email) {
+                alert("아이디, 이름, 이메일을 모두 입력하세요.");
+                return;
             }
-        } catch (err) {
-            alert("서버 오류가 발생했습니다.");
-        }
+            if (newPassword.length < 8) {
+                alert("새 비밀번호는 최소 8자 이상이어야 합니다.");
+                return;
+            }
+
+            try {
+                const res = await fetch("${ctx}/api/auth/find-password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, name, email, newPassword })
+                });
+
+                const text = await res.text();
+
+                if (res.ok) {
+                    alert(text || "비밀번호가 성공적으로 재설정되었습니다.");
+                    window.location.href = "${ctx}/auth/login";
+                } else {
+                    alert(text || "입력하신 정보가 일치하지 않습니다.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("비밀번호 재설정 중 오류가 발생했습니다.");
+            }
+        });
     });
 </script>
+
 </body>
 </html>

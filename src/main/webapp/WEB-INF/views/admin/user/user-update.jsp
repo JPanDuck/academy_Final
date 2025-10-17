@@ -20,24 +20,27 @@
             <input type="hidden" id="id" name="id" value="${userId}">
             <div class="mb-3">
                 <label class="form-label">이름</label>
-                <input type="text" id="name" class="form-control"/>
+                <input type="text" id="name" class="form-control" placeholder="이름을 입력하세요"/>
             </div>
             <div class="mb-3">
                 <label class="form-label">이메일</label>
-                <input type="email" id="email" class="form-control"/>
+                <input type="email" id="email" class="form-control" placeholder="이메일을 입력하세요"/>
             </div>
             <div class="mb-3">
                 <label class="form-label">전화번호</label>
-                <input type="text" id="phone" class="form-control"/>
+                <input type="text" id="phone" class="form-control" placeholder="전화번호를 입력하세요"/>
             </div>
             <button type="submit" class="btn btn-navy"><i class="bi bi-check"></i> 저장</button>
         </form>
     </section>
 </main>
 <jsp:include page="/WEB-INF/views/components/footer.jsp"/>
+
 <script src="<c:url value='/vendor/jquery/jquery-3.7.1.min.js'/>"></script>
 <script>
     const id = ${userId};
+
+    //기존 정보 불러오기
     $(function(){
         $.get("<c:url value='/api/admin/user/'/>" + id, function(u){
             $("#name").val(u.name);
@@ -45,23 +48,43 @@
             $("#phone").val(u.phone);
         });
     });
+
+    //수정 저장 이벤트
     $("#updateForm").submit(function(e){
         e.preventDefault();
+
+        const name = $("#name").val().trim();
+        const email = $("#email").val().trim();
+        const phone = $("#phone").val().trim();
+
+        //필수 입력값 확인
+        if (!name || !email || !phone) {
+            alert("모든 항목을 입력해주세요.");
+            return;
+        }
+
         const data = {
             user: {
                 id: id,
-                name: $("#name").val(),
-                email: $("#email").val(),
-                phone: $("#phone").val()
+                name: name,
+                email: email,
+                phone: phone
             },
             roleEntity: null
         };
+
         $.ajax({
             url: "<c:url value='/api/admin/update-user/'/>" + id,
             type: "PUT",
             data: JSON.stringify(data),
             contentType: "application/json",
-            success: ()=>alert("수정 완료")
+            success: () => {
+                alert("수정이 완료되었습니다.");
+                location.href = "<c:url value='/auth/user-detail?id='/>" + id;
+            },
+            error: (xhr) => {
+                alert("수정 중 오류 발생: " + xhr.responseText);
+            }
         });
     });
 </script>

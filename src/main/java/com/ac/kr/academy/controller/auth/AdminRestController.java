@@ -1,8 +1,10 @@
 package com.ac.kr.academy.controller.auth;
 
 import com.ac.kr.academy.domain.log.LogHistory;
+import com.ac.kr.academy.domain.user.Student;
 import com.ac.kr.academy.domain.user.User;
 import com.ac.kr.academy.dto.auth.UpdateUserRequestDTO;
+import com.ac.kr.academy.mapper.user.student.StudentMapper;
 import com.ac.kr.academy.service.log.LogHistoryService;
 import com.ac.kr.academy.service.user.UserService;
 import com.ac.kr.academy.util.LogUtils;
@@ -26,7 +28,7 @@ public class AdminRestController {
 
     private final UserService userService;
     private final LogHistoryService logHistoryService;
-
+    private final StudentMapper studentMapper;
     //로그인 ID 자동생성
     @PostMapping("/create-account")
     public ResponseEntity<?> createAccount(@RequestParam String role,
@@ -53,6 +55,22 @@ public class AdminRestController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
+    //username으로 사용자 조회 (JSP에서 사용)
+    @GetMapping("/user/by-username")
+    public ResponseEntity<?> getUserByUsername(@RequestParam String username) {
+        User user = userService.findByUsername(username);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", user.getId());
+        result.put("username", user.getUsername());
+        result.put("name", user.getName());
+        result.put("role", user.getRole());
+        return ResponseEntity.ok(result);
+    }
+
 
     //사용자 전체 조회
     @GetMapping("/user/all")
@@ -85,37 +103,47 @@ public class AdminRestController {
     //사용자 상세정보 조회
     @GetMapping("/user/detail/{userId}")
     public ResponseEntity<?> getUserDetail(@PathVariable Long userId){
-        try{
+        try {
             User user = userService.findById(userId);
 
-            if(user == null){
+            if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
             }
 
-            //역할별(학생,교수 등) 상세정보 - 각 테이블의 정보
+            //학생 상태 추가 조회
+            if (user.getRole() != null && user.getRole().toUpperCase().contains("STUDENT")) {
+                Student student = studentMapper.findByUserId(userId);
+                if (student != null && student.getStatus() != null) {
+                    user.setStatus(student.getStatus());
+                }
+            }
+
+            //역할별 상세정보 (기존 로직 유지)
             Object roleDetail = userService.findByRole(userId, user.getRole());
 
-            //기본 정보와 상세정보 합친 응답 생성(Map) - 비밀번호 제외
+            //기본 정보와 상세정보 합친 응답 (비밀번호 제외)
             Map<String, Object> response = new HashMap<>();
             response.put("id", user.getId());
             response.put("username", user.getUsername());
             response.put("name", user.getName());
             response.put("email", user.getEmail());
-            response.put("phone", user.getPassword());
+            response.put("phone", user.getPhone()); // ✅ 수정됨
             response.put("role", user.getRole());
+            response.put("status", user.getStatus()); // ✅ 추가됨
 
-            //상세 정보 추가 - 키이름은 roleDetail로 통일, 역할에 맞춰 파싱
-            if(roleDetail != null){
+            if (roleDetail != null) {
                 response.put("roleDetail", roleDetail);
             }
 
             return ResponseEntity.ok(response);
-        }catch (Exception e){
+
+        } catch (Exception e) {
             log.error("사용자 상세 정보 조회중 오류 발생: userId={}", userId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("사용자 상세 정보 조회중 오류 발생: " + e.getMessage());
         }
     }
+
 
 
     //사용자 정보 수정

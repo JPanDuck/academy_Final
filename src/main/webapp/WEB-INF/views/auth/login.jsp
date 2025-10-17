@@ -56,22 +56,22 @@
             body: JSON.stringify({ username, password })
         });
 
-        if (!res.ok) { alert("로그인 실패"); return; }
+        if (!res.ok) {
+            const errText = await res.text();
+            alert(errText || "아이디 또는 비밀번호가 틀렸습니다.");
+            return;
+        }
 
         const data = await res.json();
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken);
 
         if (data.isTempPassword) {
-            location.href = "${ctx}/auth/change-password";
+            location.href = "${ctx}/auth/find-password";
             return;
         }
         location.href = "${ctx}/index";
     });
 </script>
-
-
-
-
 </body>
 </html>
